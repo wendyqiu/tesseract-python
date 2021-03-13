@@ -7,30 +7,7 @@ from timeit import default_timer as timer
 
 from tesseract import algorithms, canonical, graph, io, mining
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--algorithm', help='algorithm to run', default='clique', type=str)
-    parser.add_argument('-g', '--graph', help='choice of graph', default='er', type=str)
-    parser.add_argument('-m', '--mode', help='mode to run (static, dynamic, both)', default='both', type=str)
-    parser.add_argument('-p', '--plot', help='plot graph', action='store_true')
-    parser.set_defaults(plot=False)
-    parser.add_argument('-n', '--vertices', help='number of vertices', default=1000, type=int)
-    parser.add_argument('-e', '--edge_prob', help='probability of an edge', default=0.02, type=float)
-    parser.add_argument('-u', '--updates', help='number of updates', type=int)
-    parser.add_argument('--max', help='maximum pattern size', type=int)
-    parser.add_argument('--seed', help='random graph generator seed', default=42, type=int)
-    parser.add_argument('-f', '--file', help='output file for patterns', default=None, type=str)
-    parser.add_argument('--log_patterns', help='log found patterns', action='store_true')
-    parser.set_defaults(log_patterns=False)
-    parser.add_argument('--canonical', help='canonicalize patterns à la Arabesque before outputting', action='store_true')
-    parser.set_defaults(canonical=False)
-    parser.add_argument('--sort', help='sort patterns before outputting', action='store_true')
-    parser.set_defaults(sort=False)
-    parser.add_argument('-r', '--reset', help='reset graph', action='store_true')
-    parser.set_defaults(reset=False)
-    parser.add_argument('-v', '--verbose', help='verbose', action='store_true')
-    parser.set_defaults(verbose=False)
-    args = parser.parse_args()
+def main(args):
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
@@ -53,6 +30,17 @@ if __name__ == '__main__':
     elif '.xsc' in args.graph:
         G = nx.Graph()
         input_iter = io.read_xsc_graph(args.graph)
+        for edge in input_iter:
+            [u, v] = edge
+            if not G.has_node(u):
+                G.add_node(u)
+            if not G.has_node(v):
+                G.add_node(v)
+            G.add_edge(u, v)
+
+    elif '.txt' in args.graph:
+        G = nx.Graph()
+        input_iter = io.read_txt_graph(args.graph)
         for edge in input_iter:
             [u, v] = edge
             if not G.has_node(u):
@@ -130,3 +118,31 @@ if __name__ == '__main__':
 
     if file is not None:
         file.close()
+
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--algorithm', help='algorithm to run', default='clique', type=str)
+    parser.add_argument('-g', '--graph', help='choice of graph', default='er', type=str)
+    parser.add_argument('-m', '--mode', help='mode to run (static, dynamic, both)', default='both', type=str)
+    parser.add_argument('-p', '--plot', help='plot graph', action='store_true')
+    parser.set_defaults(plot=False)
+    parser.add_argument('-n', '--vertices', help='number of vertices', default=1000, type=int)
+    parser.add_argument('-e', '--edge_prob', help='probability of an edge', default=0.02, type=float)
+    parser.add_argument('-u', '--updates', help='number of updates', type=int)
+    parser.add_argument('--max', help='maximum pattern size', type=int)
+    parser.add_argument('--seed', help='random graph generator seed', default=42, type=int)
+    parser.add_argument('-f', '--file', help='output file for patterns', default=None, type=str)
+    parser.add_argument('--log_patterns', help='log found patterns', action='store_true')
+    parser.set_defaults(log_patterns=False)
+    parser.add_argument('--canonical', help='canonicalize patterns à la Arabesque before outputting', action='store_true')
+    parser.set_defaults(canonical=False)
+    parser.add_argument('--sort', help='sort patterns before outputting', action='store_true')
+    parser.set_defaults(sort=False)
+    parser.add_argument('-r', '--reset', help='reset graph', action='store_true')
+    parser.set_defaults(reset=False)
+    parser.add_argument('-v', '--verbose', help='verbose', action='store_true')
+    parser.set_defaults(verbose=False)
+    args = parser.parse_args()
+
+    main(args)

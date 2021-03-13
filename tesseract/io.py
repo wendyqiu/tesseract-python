@@ -14,6 +14,22 @@ def read_xsc_graph(path):
         except:
             pass
 
+def read_txt_graph(path):
+    with open(path,'r') as file:
+        for line in file:
+            data = line.strip().split(' ')
+            
+            #print(data)
+            if len(data) > 0:
+                if data[0] == '#':
+                    pass
+                elif len(data) == 2:
+                    data = line.strip().split(' ')
+                    source = int(data[0])
+                    target = int(data[1])
+
+                    yield(source ,target)
+
 
 class PatternOutput:
     def __init__(self, file=None, canonicalize=True, sort=False, log_patterns=False):
