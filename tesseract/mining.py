@@ -84,12 +84,10 @@ def middleout_explore(G, alg, c, ignore=[]):
                     c.append(v)
                     LOG.debug('%s %s' %(str(c), 'F'))
 
-                    # Check if the neighor is connected to any sides of the edge
+                    # Check if the neighbour is connected to any sides of the edge
                     if alg.filter(c, G, v):
-
                         # For cliques, we find a n-d clique
                         alg.process(c, G)
-
                         # Keep going to find a larger clique
                         middleout_explore(G, alg, c, ignore=ignore)
                     c.pop()

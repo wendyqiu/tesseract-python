@@ -5,6 +5,29 @@ import math
 from tesseract import canonical
 
 
+def generate_clique_pattern(size):
+    return [(u, v) for u in range(size) for v in range(size) if u < v]
+
+
+def generate_exploration_plan(p):
+    all_v = set()
+    for each_edge in p:
+        all_v.add(each_edge)
+    sorted_all_v = sorted(all_v)
+    # 1. partial order
+    partial_orders = [(sorted_all_v[i], sorted_all_v[i+1]) for i in range(len(sorted_all_v)-1)]
+
+    # 2. pc: vertex induced subgraph from vc and p
+    # vertex cover for a clique should be any n-1 vertices in p
+    vc = sorted_all_v[:-1]
+    # all possibility
+    pc = [(u, v) for u in vc for v in vc if u < v]
+
+    # 3. matching orders: ascending in Vid
+    matching_orders = []
+    return partial_orders, pc, matching_orders
+
+
 class Algorithm:
     def __init__(self, out, max=math.inf):
         self.max = max
@@ -63,9 +86,20 @@ class CliqueFinding(Algorithm):
         """
 
     def process(self, e, G):
+        print("entering clique process...")
         if len(e) >= 3:
             self._inc_found()
             self.out.found(e, G, tpe='%d-clique' % len(e))
+
+
+    def pattern_based(self, e, G, last_v):
+        super()._inc_filter()
+        # TODO: choose a size for the clique pattern
+        size = 4
+        p = generate_clique_pattern(size)
+        return generate_exploration_plan(p)
+
+
 
 
 class CycleFinding(Algorithm):
