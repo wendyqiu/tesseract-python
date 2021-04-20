@@ -7,8 +7,8 @@ from timeit import default_timer as timer
 
 from tesseract import algorithms, canonical, graph, io, mining
 
-def main(args):
 
+def main(args):
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s %(levelname)-8s [%(name)s]  %(message)s",
@@ -43,6 +43,11 @@ def main(args):
         input_iter = io.read_txt_graph(args.graph)
         for edge in input_iter:
             [u, v] = edge
+
+            # We only use a truncated version of the data
+            # if u >= 1000 or v >= 1000:
+            #    continue
+
             if not G.has_node(u):
                 G.add_node(u)
             if not G.has_node(v):
@@ -66,6 +71,10 @@ def main(args):
         alg = algorithms.CliqueFinding(output, args.max if args.max else None)
     elif args.algorithm == 'cycle':
         alg = algorithms.CycleFinding(output, args.max if args.max else None)
+    elif args.algorithm == 'example_pattern':
+        alg = algorithms.ExamplePatternFinding(output, args.max if args.max else None)
+    elif args.algorithm == 'example_pattern_baseline':
+        alg = algorithms.ExamplePatternFindingBaseline(output, args.max if args.max else None)
     elif args.algorithm.startswith('example'):
         alg = algorithms.ExampleTree(output, args.max if args.max else None)
     else:
@@ -84,7 +93,8 @@ def main(args):
     if args.mode == 'dynamic' or args.mode == 'both':
         alg.reset_stats()
         if args.mode == 'dynamic':
-            updates = list(map(lambda t: list(t), list(G.edges)[:args.updates] if args.updates else list(G.edges)))  # get list of list, not list of tuples
+            updates = list(map(lambda t: list(t), list(G.edges)[:args.updates] if args.updates else list(
+                G.edges)))  # get list of list, not list of tuples
             if args.reset:
                 G = nx.Graph()  # reset graph
         elif args.graph == 'example':
@@ -101,6 +111,7 @@ def main(args):
 
         LOG.info('Running middle-out exploration with algorithm \'%s\' and %d updates' % (args.algorithm, len(updates)))
 
+        random.seed(1725)
         random.shuffle(updates)
 
         start = timer()
@@ -111,6 +122,9 @@ def main(args):
             mining.middleout_explore_update(G, alg, update, add_to_graph=True)
             LOG_STATS.debug('Found %d matches' % alg.num_found)
             LOG_STATS.debug('Executed %d filters' % alg.num_filters)
+
+            # if i >= 9999:
+            #    break
         end = timer()
         LOG_STATS.info('Ran middle-out exploration in %0.4f seconds' % (end - start))
         LOG_STATS.info(' - Found %d matches' % alg.num_found)
@@ -119,8 +133,8 @@ def main(args):
     if file is not None:
         file.close()
 
+
 if __name__ == '__main__':
-    
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--algorithm', help='algorithm to run', default='clique', type=str)
     parser.add_argument('-g', '--graph', help='choice of graph', default='er', type=str)
@@ -135,7 +149,8 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file', help='output file for patterns', default=None, type=str)
     parser.add_argument('--log_patterns', help='log found patterns', action='store_true')
     parser.set_defaults(log_patterns=False)
-    parser.add_argument('--canonical', help='canonicalize patterns à la Arabesque before outputting', action='store_true')
+    parser.add_argument('--canonical', help='canonicalize patterns à la Arabesque before outputting',
+                        action='store_true')
     parser.set_defaults(canonical=False)
     parser.add_argument('--sort', help='sort patterns before outputting', action='store_true')
     parser.set_defaults(sort=False)

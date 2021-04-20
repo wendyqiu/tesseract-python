@@ -71,24 +71,32 @@ def middleout_explore(G, alg, c, ignore=[]):
     # neighbour to it
 
     # Reaches the base case when the maximum size clique is found
-    if len(c) == alg.max:
+    if len(c) > alg.max:
         return
     else:
-
+        alg.process(c, G)
         # Get all the connected neighbour vertex of the edge
         V = set(graph.neighborhood(c, G))
         for v in V:
+            print("in middleout")
+            print(c)
+            print(G.edges(c))
+            #print(v)
+            #print(V)
+            #input("Press Enter to continue...2")
             # If the edge c does not contain the vertex
             if v not in c:
                 if canonical.canonical_r2(c, v, G, ignore=ignore):
                     c.append(v)
+                    print(c)
+                    input("check?")
                     LOG.debug('%s %s' %(str(c), 'F'))
 
                     # Check if the neighor is connected to any sides of the edge
                     if alg.filter(c, G, v):
 
                         # For cliques, we find a n-d clique
-                        alg.process(c, G)
+                        #alg.process(c, G)
 
                         # Keep going to find a larger clique
                         middleout_explore(G, alg, c, ignore=ignore)
@@ -98,6 +106,9 @@ def middleout_explore(G, alg, c, ignore=[]):
 
 
 def middleout_explore_update(G, alg, edge, add_to_graph=True):
+    #print(edge)
+    #print(len(edge))
+    #input("Press Enter to continue...1")
     if len(edge) != 2:
         return
     G.add_edge(edge[0], edge[1])
